@@ -13,6 +13,7 @@ fi
 if [ ! -f public-agents.txt ]; then
     echo "File public-agents.txt not found!"
 else
+dos2unix public-agents.txt
 input=public-agents.txt
 
 while read ip
