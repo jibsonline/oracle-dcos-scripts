@@ -1,5 +1,5 @@
 #!/bin/sh
-set +e
+#set +e
 function checkPort
 {
 port_status=`ssh -t -n -o "StrictHostKeyChecking no" -t -i genconf/ssh_key ${ip} 'sudo netstat -plant|grep "127.0.0.1:53"' 2> /dev/null`
@@ -11,9 +11,9 @@ else
 fi
 }
 if [ ! -f public-agents.txt ]; then
-    echo "File public-agents.txt not found!"
+    echo "File public-agents.txt not found"
 else
-dos2unix public-agents.txt
+echo "in"
 input=public-agents.txt
 
 while read ip
