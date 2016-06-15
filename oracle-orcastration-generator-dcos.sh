@@ -56,6 +56,27 @@ done
 selected_ssh_key=`echo ${arr[$((ssh_sel-1))]}`
 #echo $selected_ssh_key
 }
+
+function getImages
+{
+imagearr=($(curl -s -X GET -H "Cookie: ${auth_token}"      -H "Accept: application/oracle-compute-v3+json"    "${endpoint}"/imagelist/Compute-"${identity_domian}"/|awk '{ gsub(",", "\n") } 1'|grep "\"name\""|awk '{ gsub(":", "},\n") } 1'|grep -v "\"name\""| awk -F '"' '{print $2}'))
+#echo $imagearr
+echo "Available Images";
+index_count=0
+for i in "${!imagearr[@]}"; do
+  printf "%s\t%s\n" "$((i+1))" "${imagearr[$i]}"
+  index_count=$((index_count+1))
+done
+#echo $index_count
+while [[ ! $image_sel -gt 0 ]] || [[ ! $image_sel -le $index_count ]]
+do
+        echo -n "Select the image to be used for instances [Eg 1]: "
+        read image_sel
+done
+selected_image=`echo ${imagearr[$((image_sel-1))]}`
+#echo $selected_ssh_key
+}
+
 function shape
 {
 	while [[ -z $shape_type ]] 
@@ -146,20 +167,20 @@ function instances
 #For Master Agenst
 for (( c=1; c<=$master_count; c++ ))
 do
-instance_json=$instance_json'{"label":"master_'"${c}"'","obj_type":"launchplan","ha_policy":"active","objects":[{"instances":[{"imagelist":"/Compute-'"${identity_domian}"'/'"${userid}"'/CentOS7","label":"master'"${c}"'","hostname":"master-'"${c}"'","name":"/Compute-'"${identity_domian}"'/'"${userid}"'/master_'"${c}"'","storage_attachments":[{"index":1,"volume":"/Compute-'"${identity_domian}"'/'"${userid}"'/master_'"${c}"'_volume"}],"networking":{"eth0":{"seclists":["/Compute-'"${identity_domian}"'/default/default","/Compute-'"${identity_domian}"'/'"${userid}"'/master_seclist"],"nat":"ipreservation:/Compute-'"${identity_domian}"'/'"${userid}"'/ipres_master_'"${c}"'"}},"shape":"oc2m","sshkeys":["'"${selected_ssh_key}"'"]}]}]},'
+instance_json=$instance_json'{"label":"master_'"${c}"'","obj_type":"launchplan","ha_policy":"active","objects":[{"instances":[{"imagelist":"'"${selected_image}"'","label":"master'"${c}"'","hostname":"master-'"${c}"'","name":"/Compute-'"${identity_domian}"'/'"${userid}"'/master_'"${c}"'","storage_attachments":[{"index":1,"volume":"/Compute-'"${identity_domian}"'/'"${userid}"'/master_'"${c}"'_volume"}],"networking":{"eth0":{"seclists":["/Compute-'"${identity_domian}"'/default/default","/Compute-'"${identity_domian}"'/'"${userid}"'/master_seclist"],"nat":"ipreservation:/Compute-'"${identity_domian}"'/'"${userid}"'/ipres_master_'"${c}"'"}},"shape":"oc2m","sshkeys":["'"${selected_ssh_key}"'"]}]}]},'
 done
 #For Public Agents
 for (( c=1; c<=$public_count; c++ ))
 do
-instance_json=$instance_json'{"label":"public_agent_'"${c}"'","obj_type":"launchplan","ha_policy":"active","objects":[{"instances":[{"imagelist":"/Compute-'"${identity_domian}"'/'"${userid}"'/CentOS7","label":"public_agent_'"${c}"'","hostname":"public-agent-'"${c}"'","name":"/Compute-'"${identity_domian}"'/'"${userid}"'/public_agent_'"${c}"'","storage_attachments":[{"index":1,"volume":"/Compute-'"${identity_domian}"'/'"${userid}"'/public_'"${c}"'_volume"}],"networking":{"eth0":{"seclists":["/Compute-'"${identity_domian}"'/default/default","/Compute-'"${identity_domian}"'/'"${userid}"'/agents_seclist"],"nat":"ipreservation:/Compute-'"${identity_domian}"'/'"${userid}"'/ipres_public_'"${c}"'"}},"shape":"oc4","sshkeys":["'"${selected_ssh_key}"'"]}]}]},'
+instance_json=$instance_json'{"label":"public_agent_'"${c}"'","obj_type":"launchplan","ha_policy":"active","objects":[{"instances":[{"imagelist":"'"${selected_image}"'","label":"public_agent_'"${c}"'","hostname":"public-agent-'"${c}"'","name":"/Compute-'"${identity_domian}"'/'"${userid}"'/public_agent_'"${c}"'","storage_attachments":[{"index":1,"volume":"/Compute-'"${identity_domian}"'/'"${userid}"'/public_'"${c}"'_volume"}],"networking":{"eth0":{"seclists":["/Compute-'"${identity_domian}"'/default/default","/Compute-'"${identity_domian}"'/'"${userid}"'/agents_seclist"],"nat":"ipreservation:/Compute-'"${identity_domian}"'/'"${userid}"'/ipres_public_'"${c}"'"}},"shape":"oc4","sshkeys":["'"${selected_ssh_key}"'"]}]}]},'
 done
 #For Private Agents
 for (( c=1; c<=$private_count; c++ ))
 do
-instance_json=$instance_json'{"label":"private_agent_'"${c}"'","obj_type":"launchplan","ha_policy":"active","objects":[{"instances":[{"imagelist":"/Compute-'"${identity_domian}"'/'"${userid}"'/CentOS7","label":"private_agent_'"${c}"'","hostname":"private-agent-'"${c}"'","name":"/Compute-'"${identity_domian}"'/'"${userid}"'/private_agent_'"${c}"'","storage_attachments":[{"index":1,"volume":"/Compute-'"${identity_domian}"'/'"${userid}"'/private_'"${c}"'_volume"}],"networking":{"eth0":{"seclists":["/Compute-'"${identity_domian}"'/default/default","/Compute-'"${identity_domian}"'/'"${userid}"'/agents_seclist"],"nat":"ipreservation:/Compute-'"${identity_domian}"'/'"${userid}"'/ipres_private_'"${c}"'"}},"shape":"oc4","sshkeys":["'"${selected_ssh_key}"'"]}]}]},'
+instance_json=$instance_json'{"label":"private_agent_'"${c}"'","obj_type":"launchplan","ha_policy":"active","objects":[{"instances":[{"imagelist":"'"${selected_image}"'","label":"private_agent_'"${c}"'","hostname":"private-agent-'"${c}"'","name":"/Compute-'"${identity_domian}"'/'"${userid}"'/private_agent_'"${c}"'","storage_attachments":[{"index":1,"volume":"/Compute-'"${identity_domian}"'/'"${userid}"'/private_'"${c}"'_volume"}],"networking":{"eth0":{"seclists":["/Compute-'"${identity_domian}"'/default/default","/Compute-'"${identity_domian}"'/'"${userid}"'/agents_seclist"],"nat":"ipreservation:/Compute-'"${identity_domian}"'/'"${userid}"'/ipres_private_'"${c}"'"}},"shape":"oc4","sshkeys":["'"${selected_ssh_key}"'"]}]}]},'
 done
 #For Bootstrap
-instance_json=$instance_json'{"label":"bootstrap","obj_type":"launchplan","ha_policy":"active","objects":[{"instances":[{"imagelist":"/Compute-'"${identity_domian}"'/'"${userid}"'/CentOS7","label":"bootstrap","name":"/Compute-'"${identity_domian}"'/'"${userid}"'/bootstrap","hostname":"bootstrap","storage_attachments":[{"index":1,"volume":"/Compute-'"${identity_domian}"'/'"${userid}"'/boot_volume"}],"networking":{"eth0":{"seclists":["/Compute-'"${identity_domian}"'/default/default","/Compute-'"${identity_domian}"'/'"${userid}"'/boot_seclist"],"nat":"ipreservation:/Compute-'"${identity_domian}"'/'"${userid}"'/ipres_boot"}},"shape":"oc1m","sshkeys":["'"${selected_ssh_key}"'"]}]}]}'
+instance_json=$instance_json'{"label":"bootstrap","obj_type":"launchplan","ha_policy":"active","objects":[{"instances":[{"imagelist":"'"${selected_image}"'","label":"bootstrap","name":"/Compute-'"${identity_domian}"'/'"${userid}"'/bootstrap","hostname":"bootstrap","storage_attachments":[{"index":1,"volume":"/Compute-'"${identity_domian}"'/'"${userid}"'/boot_volume"}],"networking":{"eth0":{"seclists":["/Compute-'"${identity_domian}"'/default/default","/Compute-'"${identity_domian}"'/'"${userid}"'/boot_seclist"],"nat":"ipreservation:/Compute-'"${identity_domian}"'/'"${userid}"'/ipres_boot"}},"shape":"oc1m","sshkeys":["'"${selected_ssh_key}"'"]}]}]}'
 #instance_json=`echo "$instance_json"|sed '$s/.$//'`
 
 instance_json='{"description":"Instances","name":"/Compute-'"${identity_domian}"'/'"${userid}"'/instances","oplans": ['$instance_json']}'
@@ -275,9 +296,15 @@ done
 }
 getInstanceDetails
 getsshkeys
-
-echo Master nodes : $master_count , Public Agent Nodes : $public_count , Private Agent Nodes : $private_count , Instances\' size : $instance_size , SSH Key : $selected_ssh_key
-echo -n "Continue? [y/n]: "
+getImages
+YELLOW='\033[0;33m'
+GREEN='\033[0;32m'
+NC='\033[0m'
+echo -e ${YELLOW}Master nodes : $master_count , Public Agent Nodes : $public_count , Private Agent Nodes : $private_count , Instances\' size : $instance_size 
+echo SSH Key : $selected_ssh_key
+echo Image used : $selected_image
+echo -n -e ${GREEN} "Continue? [y/n]: "
+echo -e ${NC}
 read cont
 if [[ ! $cont == "y" ]]
 then
